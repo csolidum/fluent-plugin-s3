@@ -118,8 +118,13 @@ module Fluent::Plugin
     def configure(conf)
       super
 
+      allowed_aws_services = ["s3-accesspoint"]
       if @s3_endpoint && @s3_endpoint.end_with?('amazonaws.com')
-        raise Fluent::ConfigError, "s3_endpoint parameter is not supported for S3, use s3_region instead. This parameter is for S3 compatible services"
+        endpoint_parts = @s3_endpoint.split('.')
+        # allow for using s3 access points
+        if endpoint_parts.length != 5 || not allowed_aws_services.include? endpoint_parts[1]
+            raise Fluent::ConfigError, "s3_endpoint parameter is not supported for S3, use s3_region instead. This parameter is for S3 compatible services"
+        end
       end
 
       if @sqs.endpoint && @sqs.endpoint.end_with?('amazonaws.com')
